@@ -293,7 +293,7 @@ _cx_cmd_show() {
   fi
   if [ "${CODEX_ACTIVE_PROFILE:-}" = chatgpt ]; then
     printf '当前运行在 chatgpt 浏览器模式\n'
-    printf '  %-28s = %s\n' preferred_auth_method browser
+    printf '  %-28s = %s\n' preferred_auth_method 'chatgpt (browser)'
     printf '  %-28s = %s\n' model "${CODEX_CHATGPT_MODEL:-gpt-4o-mini}"
     return 0
   fi
@@ -436,7 +436,7 @@ _cx_switch_chatgpt() {
   {
     printf 'model = "%s"\n' "$model"
     printf 'model_provider = "chatgpt"\n'
-    printf 'preferred_auth_method = "browser"\n'
+    printf 'preferred_auth_method = "chatgpt"\n'
     printf '\n[model_providers.chatgpt]\n'
     printf 'name = "ChatGPT Web"\n'
     printf 'auth_via_browser = true\n'

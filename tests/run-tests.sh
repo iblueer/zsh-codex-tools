@@ -62,6 +62,7 @@ PY
   echo "== switch chatgpt =="
   _run 'codex-use chatgpt'
   grep -q 'model_provider = "chatgpt"' "$CODEX_HOME/config.toml" || { echo "FAIL: chatgpt config missing"; exit 1; }
+  grep -q 'preferred_auth_method = "chatgpt"' "$CODEX_HOME/config.toml" || { echo "FAIL: chatgpt preferred_auth_method missing"; exit 1; }
   python3 - <<'PY'
 import json, os
 path = os.environ['CODEX_HOME'] + '/auth.json'
