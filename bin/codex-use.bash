@@ -442,8 +442,53 @@ _cx_switch_chatgpt() {
     printf 'auth_via_browser = true\n'
   } >"$tmp"
   mv "$tmp" "$CODEX_USE_CONFIG"
-  printf '{"mode":"browser"}\n' >"$CODEX_USE_AUTH"
+
+  local tmp_auth="$(mktemp)"
+  python3 - "$CODEX_USE_AUTH" "$tmp_auth" <<'PY'
+import json, os, sys
+
+src, dst = sys.argv[1:3]
+strip_keys = {
+    "OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_ORG_ID", "OPENAI_PROJECT_ID", "OPENAI_API_TYPE",
+    "ANYROUTER_API_KEY", "ANYROUTER_TOKEN",
+    "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+    "AZURE_OPENAI_KEY", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT",
+    "DEEPINFRA_API_KEY",
+    "FIREWORKS_API_KEY",
+    "GOOGLE_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS",
+    "GROQ_API_KEY",
+    "MISTRAL_API_KEY",
+    "MOONSHOT_API_KEY",
+    "NOVITA_API_KEY",
+    "OPENROUTER_API_KEY",
+    "REPLICATE_API_TOKEN",
+    "TOGETHER_API_KEY",
+    "ZHIPUAI_API_KEY", "ZHIPU_API_KEY",
+}
+
+data = {}
+if os.path.exists(src):
+    try:
+        with open(src, "r", encoding="utf-8") as fh:
+            loaded = json.load(fh)
+        if isinstance(loaded, dict):
+            data = loaded
+    except Exception:
+        data = {}
+
+for key in list(data.keys()):
+    if key in strip_keys:
+        data.pop(key, None)
+
+data["mode"] = "browser"
+
+with open(dst, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, ensure_ascii=False, indent=2)
+    fh.write("\n")
+PY
+  mv "$tmp_auth" "$CODEX_USE_AUTH"
   chmod 600 "$CODEX_USE_AUTH" 2>/dev/null || true
+
   printf 'chatgpt\n' >"$CODEX_USE_LAST"
   _cx_ok "已切换到 ChatGPT 浏览器模式（已保存为默认）"
   _cx_cmd_show
