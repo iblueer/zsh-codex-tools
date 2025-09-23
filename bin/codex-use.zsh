@@ -3,7 +3,6 @@
 # 配置项：
 #   CODEX_HOME             默认 $HOME/.codex       => 环境目录位于 $CODEX_HOME/envs
 #   CODEX_USE_EDITOR_CMD   自定义编辑器命令（优先级最高），例如：export CODEX_USE_EDITOR_CMD="code -w"
-#   CODEX_CHATGPT_MODEL    切换 chatgpt 时使用的默认模型（默认 gpt-4o-mini）
 
 : ${CODEX_HOME:="$HOME/.codex"}
 typeset -g CODEX_USE_HOME="$CODEX_HOME"
@@ -283,7 +282,7 @@ _cx_cmd_show() {
   if [[ "${CODEX_ACTIVE_PROFILE:-}" == chatgpt ]]; then
     print -r -- "当前运行在 chatgpt 浏览器模式"
     printf '  %-28s = %s\n' preferred_auth_method "chatgpt (browser)"
-    printf '  %-28s = %s\n' model "${CODEX_CHATGPT_MODEL:-gpt-4o-mini}"
+    printf '  %-28s = %s\n' model "<由 Codex 自动管理>"
     return 0
   fi
   print -r -- "当前生效变量："
@@ -417,10 +416,8 @@ _cx_switch_env() {
 _cx_switch_chatgpt() {
   _cx_purge_api_env
   export CODEX_ACTIVE_PROFILE="chatgpt"
-  local model="${CODEX_CHATGPT_MODEL:-gpt-4o-mini}"
   local tmp="$(mktemp)"
   {
-    printf 'model = "%s"\n' "$model"
     printf 'model_provider = "chatgpt"\n'
     printf 'preferred_auth_method = "chatgpt"\n'
     printf '\n[model_providers.chatgpt]\n'
@@ -503,7 +500,7 @@ _cx_help() {
 配置：
   CODEX_HOME             默认 $HOME/.codex
   CODEX_USE_EDITOR_CMD   自定义编辑命令（优先级最高）
-  CODEX_CHATGPT_MODEL    ChatGPT 浏览器模式下使用的模型（默认 gpt-4o-mini）
+  ChatGPT 模式           模型由 Codex 自动管理
 H
 }
 
