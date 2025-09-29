@@ -481,9 +481,7 @@ _cx_switch_chatgpt() {
   export CODEX_ACTIVE_PROFILE="chatgpt"
   local tmp="$(mktemp)"
   {
-    printf 'model_provider = "chatgpt"\n'
-    printf 'preferred_auth_method = "chatgpt"\n'
-    printf '\n[model_providers.chatgpt]\n'
+    printf '[model_providers.chatgpt]\n'
     printf 'name = "ChatGPT Web"\n'
     printf 'auth_via_browser = true\n'
   } >"$tmp"
