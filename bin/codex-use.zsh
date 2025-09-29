@@ -567,6 +567,7 @@ _cx_autoload_on_startup() {
   fi
 }
 
-if [[ -o interactive ]]; then
-  _cx_autoload_on_startup
-fi
+# 禁用自动启动，避免污染用户配置
+# if [[ -o interactive ]]; then
+#   _cx_autoload_on_startup
+# fi
