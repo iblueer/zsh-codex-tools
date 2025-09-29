@@ -194,12 +194,47 @@ _cx_purge_api_env() {
   unset -m 'FIREWORKS_*' 2>/dev/null || true
 }
 
+_cx_backup_chatgpt_tokens() {
+  # 自动备份ChatGPT tokens（如果当前是ChatGPT环境且有有效tokens）
+  local chatgpt_backup="$CODEX_USE_HOME/auth.json.chatgpt"
+
+  if [[ -f "$CODEX_USE_AUTH" ]]; then
+    # 检查当前auth.json是否包含ChatGPT tokens
+    if python3 - "$CODEX_USE_AUTH" <<'PY'
+import json, sys, os
+try:
+    with open(sys.argv[1], "r") as f:
+        data = json.load(f)
+    # 检查是否包含ChatGPT tokens结构
+    has_tokens = "tokens" in data and isinstance(data.get("tokens"), dict)
+    has_id_token = has_tokens and "id_token" in data["tokens"]
+    has_access_token = has_tokens and "access_token" in data["tokens"]
+
+    if has_id_token and has_access_token:
+        exit(0)  # 有有效的ChatGPT tokens
+    else:
+        exit(1)  # 没有有效的ChatGPT tokens
+except:
+    exit(1)
+PY
+    then
+      # 备份ChatGPT tokens
+      cp "$CODEX_USE_AUTH" "$chatgpt_backup"
+      chmod 600 "$chatgpt_backup" 2>/dev/null || true
+    fi
+  fi
+}
+
 _cx_source_env() {
   local file="$1"
   if [[ ! -f "$file" ]]; then
     _cx_err "未找到环境文件：$file"
     return 1
   fi
+
+  # 在切换到其他环境前，自动备份ChatGPT tokens
+  _cx_backup_chatgpt_tokens
+
   _cx_purge_api_env
   set -a
   source "$file"
@@ -454,55 +489,36 @@ _cx_switch_chatgpt() {
   } >"$tmp"
   mv "$tmp" "$CODEX_USE_CONFIG"
 
-  local tmp_auth="$(mktemp)"
-  python3 - "$CODEX_USE_AUTH" "$tmp_auth" <<'PY'
-import json, os, sys
+  # 智能备份/恢复ChatGPT认证文件
+  local chatgpt_backup="$CODEX_USE_HOME/auth.json.chatgpt"
 
-src, dst = sys.argv[1:3]
-strip_keys = {
-    "OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_ORG_ID", "OPENAI_PROJECT_ID", "OPENAI_API_TYPE",
-    "ANYROUTER_API_KEY", "ANYROUTER_TOKEN",
-    "AZURE_OPENAI_KEY", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT",
-    "DEEPINFRA_API_KEY",
-    "FIREWORKS_API_KEY",
-    "GOOGLE_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS",
-    "GROQ_API_KEY",
-    "MISTRAL_API_KEY",
-    "MOONSHOT_API_KEY",
-    "NOVITA_API_KEY",
-    "OPENROUTER_API_KEY",
-    "REPLICATE_API_TOKEN",
-    "TOGETHER_API_KEY",
-    "ZHIPUAI_API_KEY", "ZHIPU_API_KEY",
-}
-
-data = {}
-if os.path.exists(src):
-    try:
-        with open(src, "r", encoding="utf-8") as fh:
-            loaded = json.load(fh)
-        if isinstance(loaded, dict):
-            data = loaded
-    except Exception:
-        data = {}
-
-for key in list(data.keys()):
-    if key in strip_keys:
-        data.pop(key, None)
-
-data["mode"] = "browser"
-
-with open(dst, "w", encoding="utf-8") as fh:
+  # 检查是否有之前的ChatGPT tokens备份
+  if [[ -f "$chatgpt_backup" ]]; then
+    # 恢复之前保存的ChatGPT tokens
+    cp "$chatgpt_backup" "$CODEX_USE_AUTH"
+    chmod 600 "$CODEX_USE_AUTH" 2>/dev/null || true
+    _cx_info "已恢复ChatGPT认证tokens"
+  else
+    # 没有备份，创建基础的browser模式配置
+    local tmp_auth="$(mktemp)"
+    python3 - "$tmp_auth" <<'PY'
+import json, sys
+data = {"mode": "browser"}
+with open(sys.argv[1], "w", encoding="utf-8") as fh:
     json.dump(data, fh, ensure_ascii=False, indent=2)
     fh.write("\n")
 PY
-  mv "$tmp_auth" "$CODEX_USE_AUTH"
-  chmod 600 "$CODEX_USE_AUTH" 2>/dev/null || true
+    mv "$tmp_auth" "$CODEX_USE_AUTH"
+    chmod 600 "$CODEX_USE_AUTH" 2>/dev/null || true
+    _cx_warn "未找到ChatGPT认证备份，请执行 'codex login' 重新登录"
+  fi
 
   print -r -- "chatgpt" >"$CODEX_USE_LAST"
   _cx_ok "已切换到 ChatGPT 浏览器模式（已保存为默认）"
   _cx_cmd_show
-  _cx_info "如需刷新登录，请执行：codex login --browser"
+  if [[ ! -f "$chatgpt_backup" ]]; then
+    _cx_info "如需刷新登录，请执行：codex login"
+  fi
 }
 
 _cx_help() {
