@@ -2,6 +2,16 @@
 
 本指南适用于无法访问GitHub的服务器环境。
 
+## 前置要求
+
+**重要**: Codex CLI 需要 Node.js >= 16。请先确认服务器上的 Node.js 版本:
+
+```sh
+node --version
+```
+
+如果版本低于 16 或未安装,请参考下方 [离线安装 Node.js](#离线安装-nodejs) 章节。
+
 ## 安装步骤
 
 ### 1. 打包项目
@@ -112,6 +122,116 @@ CODEX_TOOLS_DEBUG=1 ./install_locally.sh
 ```
 
 这将显示详细的执行过程,帮助定位问题。
+
+## 离线安装 Node.js
+
+如果服务器上的 Node.js 版本低于 16 或未安装,需要先离线安装 Node.js。
+
+### 步骤 1: 在有网络的机器上下载 Node.js
+
+访问 Node.js 官网下载对应系统的二进制包:
+
+**对于 Linux x64 系统** (最常见):
+```sh
+# 下载 Node.js 20 LTS (推荐)
+wget https://nodejs.org/dist/v20.18.1/node-v20.18.1-linux-x64.tar.xz
+
+# 或使用 curl
+curl -O https://nodejs.org/dist/v20.18.1/node-v20.18.1-linux-x64.tar.xz
+```
+
+**对于其他架构**:
+- Linux ARM64: `node-v20.18.1-linux-arm64.tar.xz`
+- Linux ARMv7: `node-v20.18.1-linux-armv7l.tar.xz`
+
+查看所有版本: https://nodejs.org/dist/
+
+### 步骤 2: 上传到服务器
+
+```sh
+scp node-v20.18.1-linux-x64.tar.xz user@server:/tmp/
+```
+
+### 步骤 3: 在服务器上安装
+
+登录服务器后执行:
+
+```sh
+# 解压到 /usr/local
+cd /tmp
+sudo tar -xJf node-v20.18.1-linux-x64.tar.xz -C /usr/local --strip-components=1
+
+# 或解压到用户目录 (无需 root 权限)
+mkdir -p ~/nodejs
+tar -xJf node-v20.18.1-linux-x64.tar.xz -C ~/nodejs --strip-components=1
+
+# 添加到 PATH (添加到 ~/.bashrc 或 ~/.zshrc)
+echo 'export PATH="$HOME/nodejs/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 步骤 4: 验证安装
+
+```sh
+node --version   # 应显示 v20.18.1
+npm --version    # 应显示 10.x.x
+```
+
+### 步骤 5: 离线安装 Codex CLI
+
+如果服务器完全无法访问外网,需要在有网络的机器上打包 Codex CLI:
+
+```sh
+# 在有网络的机器上
+npm pack @openai/codex
+# 这会生成一个 openai-codex-X.X.X.tgz 文件
+```
+
+上传到服务器后安装:
+
+```sh
+# 在服务器上
+npm install -g ./openai-codex-X.X.X.tgz
+```
+
+或者,如果服务器可以访问 npm registry (只是无法访问 GitHub):
+
+```sh
+npm install -g @openai/codex
+```
+
+### 快速命令总结 (Ubuntu 20, x64)
+
+```sh
+# === 在有网络的机器上 ===
+# 下载 Node.js
+wget https://nodejs.org/dist/v20.18.1/node-v20.18.1-linux-x64.tar.xz
+
+# 下载 Codex CLI (可选,如果 npm registry 也无法访问)
+npm pack @openai/codex
+
+# 上传到服务器
+scp node-v20.18.1-linux-x64.tar.xz user@server:/tmp/
+scp openai-codex-*.tgz user@server:/tmp/  # 如果需要
+
+# === 在服务器上 ===
+# 安装 Node.js (用户目录,无需 root)
+cd /tmp
+mkdir -p ~/nodejs
+tar -xJf node-v20.18.1-linux-x64.tar.xz -C ~/nodejs --strip-components=1
+echo 'export PATH="$HOME/nodejs/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# 验证
+node --version
+
+# 安装 Codex CLI
+npm install -g @openai/codex
+# 或使用离线包: npm install -g ./openai-codex-*.tgz
+
+# 清理临时文件
+rm /tmp/node-v20.18.1-linux-x64.tar.xz
+```
 
 ## 卸载
 
