@@ -10,6 +10,7 @@ typeset -g CODEX_USE_ENV_DIR="$CODEX_USE_HOME/envs"
 typeset -g CODEX_USE_LAST="$CODEX_USE_HOME/last_choice"
 typeset -g CODEX_USE_CONFIG="$CODEX_USE_HOME/config.toml"
 typeset -g CODEX_USE_AUTH="$CODEX_USE_HOME/auth.json"
+typeset -ga CODEX_USE_SUBCOMMANDS=(help list ls chatgpt new edit del delete rm show current open dir)
 
 _cx_info() { print -r -- "▸ $*"; }
 _cx_warn() { print -r -- "⚠ $*"; }
@@ -41,6 +42,54 @@ _cx_list_names() {
   for f in "$CODEX_USE_ENV_DIR"/*.env(N); do
     print -r -- "${f:t:r}"
   done
+}
+
+_cx_env_candidates() {
+  local cur="${1:-}"
+  local prefix suffix search_dir entry base rel
+  reply=()
+  if [[ "$cur" == */* ]]; then
+    prefix="${cur%/*}"
+    suffix="${cur##*/}"
+    search_dir="$CODEX_USE_ENV_DIR/$prefix"
+  else
+    prefix=""
+    suffix="$cur"
+    search_dir="$CODEX_USE_ENV_DIR"
+  fi
+  [[ -d "$search_dir" ]] || return
+  local -a entries=()
+  if command -v find >/dev/null 2>&1; then
+    while IFS= read -r entry; do
+      base="${entry##*/}"
+      [[ "$base" == "$suffix"* ]] || continue
+      if [[ -d "$entry" ]]; then
+        rel="${prefix:+$prefix/}$base/"
+      elif [[ "$entry" == *.env ]]; then
+        rel="${prefix:+$prefix/}${base%.env}"
+      else
+        continue
+      fi
+      [[ "${rel:l}" == *chatgpt* ]] && continue
+      entries+=("$rel")
+    done < <(LC_ALL=C find "$search_dir" -mindepth 1 -maxdepth 1 \( -type d -o -type f -name '*.env' \) -print 2>/dev/null | LC_ALL=C sort)
+  else
+    for entry in "$search_dir"/*; do
+      [[ -e "$entry" ]] || continue
+      base="${entry##*/}"
+      [[ "$base" == "$suffix"* ]] || continue
+      if [[ -d "$entry" ]]; then
+        rel="${prefix:+$prefix/}$base/"
+      elif [[ "$entry" == *.env ]]; then
+        rel="${prefix:+$prefix/}${base%.env}"
+      else
+        continue
+      fi
+      [[ "${rel:l}" == *chatgpt* ]] && continue
+      entries+=("$rel")
+    done
+  fi
+  (( ${#entries[@]} > 0 )) && reply=(${(ou)entries})
 }
 
 _cx_validate_env_name() {
@@ -560,6 +609,31 @@ codex-use() {
   esac
 }
 
+_cx_zsh_complete() {
+  local cur="${words[CURRENT]}"
+  local -a envs
+  _cx_env_candidates "$cur"
+  envs=("${reply[@]}")
+  if (( CURRENT == 2 )); then
+    if [[ "$cur" != */* ]]; then
+      (( ${#CODEX_USE_SUBCOMMANDS[@]} > 0 )) && compadd -a CODEX_USE_SUBCOMMANDS
+    fi
+    (( ${#envs[@]} > 0 )) && compadd -Q -S '' -a envs
+    return
+  fi
+  case "${words[2]}" in
+    new|edit|del|delete|rm)
+      (( ${#envs[@]} > 0 )) && compadd -Q -S '' -a envs
+      ;;
+  esac
+}
+
+_cx_setup_completion() {
+  if (( $+functions[compdef] )); then
+    compdef _cx_zsh_complete codex-use
+  fi
+}
+
 _cx_autoload_on_startup() {
   _cx_ensure_home
   local chosen=""
@@ -582,6 +656,7 @@ _cx_autoload_on_startup() {
 }
 
 # 禁用自动启动，避免污染用户配置
-# if [[ -o interactive ]]; then
-#   _cx_autoload_on_startup
-# fi
+if [[ -o interactive ]]; then
+  _cx_setup_completion
+  # _cx_autoload_on_startup
+fi
