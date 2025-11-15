@@ -10,7 +10,7 @@ typeset -g CODEX_USE_ENV_DIR="$CODEX_USE_HOME/envs"
 typeset -g CODEX_USE_LAST="$CODEX_USE_HOME/last_choice"
 typeset -g CODEX_USE_CONFIG="$CODEX_USE_HOME/config.toml"
 typeset -g CODEX_USE_AUTH="$CODEX_USE_HOME/auth.json"
-typeset -ga CODEX_USE_SUBCOMMANDS=(help list ls chatgpt new edit del delete rm show current open dir)
+typeset -ga CODEX_USE_SUBCOMMANDS=(help list ls chatgpt new edit del show open)
 
 _cx_info() { print -r -- "▸ $*"; }
 _cx_warn() { print -r -- "⚠ $*"; }
@@ -602,9 +602,9 @@ codex-use() {
     chatgpt)             _cx_switch_chatgpt ;;
     new)                 _cx_cmd_new "$@" ;;
     edit)                _cx_cmd_edit "$@" ;;
-    del|delete|rm)       _cx_cmd_del "$@" ;;
-    show|current)        _cx_cmd_show ;;
-    open|dir)            _cx_open_path "$CODEX_USE_ENV_DIR" ;;
+    del)                 _cx_cmd_del "$@" ;;
+    show)                _cx_cmd_show ;;
+    open)                _cx_open_path "$CODEX_USE_ENV_DIR" ;;
     *)                   _cx_validate_env_name "$cmd" && _cx_switch_env "$cmd" ;;
   esac
 }
