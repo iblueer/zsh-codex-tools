@@ -16,20 +16,20 @@ on_err() {
 }
 trap 'on_err' ERR
 
-echo ">>> 开始本地安装 codex-use ..."
+echo ">>> 开始本地安装 codex-switch ..."
 
 # 获取脚本所在目录(即项目源码目录)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "[Info] 项目源码目录: $SCRIPT_DIR"
 
 # 检查必要文件是否存在
-if [ ! -f "$SCRIPT_DIR/bin/codex-use.zsh" ] || \
-   [ ! -f "$SCRIPT_DIR/bin/codex-use.bash" ] || \
-   [ ! -f "$SCRIPT_DIR/completions/_codex-use" ]; then
+if [ ! -f "$SCRIPT_DIR/bin/codex-switch.zsh" ] || \
+   [ ! -f "$SCRIPT_DIR/bin/codex-switch.bash" ] || \
+   [ ! -f "$SCRIPT_DIR/completions/_codex-switch" ]; then
   echo "✗ 错误: 项目源码不完整,请确认以下文件存在:" >&2
-  echo "  - bin/codex-use.zsh" >&2
-  echo "  - bin/codex-use.bash" >&2
-  echo "  - completions/_codex-use" >&2
+  echo "  - bin/codex-switch.zsh" >&2
+  echo "  - bin/codex-switch.bash" >&2
+  echo "  - completions/_codex-switch" >&2
   exit 1
 fi
 
@@ -51,9 +51,12 @@ mkdir -p "$BIN_DIR" "$COMP_DIR"
 
 # 从本地复制文件而非下载
 echo "[Step 1] 复制脚本文件到 $BIN_DIR"
+cp -f "$SCRIPT_DIR/bin/codex-switch.zsh" "$BIN_DIR/codex-switch.zsh"
+cp -f "$SCRIPT_DIR/bin/codex-switch.bash" "$BIN_DIR/codex-switch.bash"
 cp -f "$SCRIPT_DIR/bin/codex-use.zsh" "$BIN_DIR/codex-use.zsh"
 cp -f "$SCRIPT_DIR/bin/codex-use.bash" "$BIN_DIR/codex-use.bash"
 echo "[Step 1] 复制补全文件到 $COMP_DIR"
+cp -f "$SCRIPT_DIR/completions/_codex-switch" "$COMP_DIR/_codex-switch"
 cp -f "$SCRIPT_DIR/completions/_codex-use" "$COMP_DIR/_codex-use"
 
 : "${CODEX_HOME:="$HOME/.codex"}"
@@ -113,8 +116,8 @@ if [ "$SHELL_NAME" = "bash" ]; then
   cat >"$INIT_FILE" <<'EINIT'
 # zsh-codex-tools init for bash (auto-generated)
 : ${CODEX_HOME:="$HOME/.codex"}
-if [ -f "$HOME/.codex-tools/bin/codex-use.bash" ]; then
-  . "$HOME/.codex-tools/bin/codex-use.bash"
+if [ -f "$HOME/.codex-tools/bin/codex-switch.bash" ]; then
+  . "$HOME/.codex-tools/bin/codex-switch.bash"
 fi
 EINIT
 else
@@ -132,8 +135,8 @@ esac
 
 case "$-" in
   *i*)
-    if [ -f "$HOME/.codex-tools/bin/codex-use.zsh" ]; then
-      . "$HOME/.codex-tools/bin/codex-use.zsh"
+    if [ -f "$HOME/.codex-tools/bin/codex-switch.zsh" ]; then
+      . "$HOME/.codex-tools/bin/codex-switch.zsh"
     fi
     ;;
 esac
@@ -189,4 +192,4 @@ echo "配置文件：$CONFIG_FILE"
 echo "授权文件：$AUTH_FILE"
 echo
 echo "请执行： source \"$RC\""
-echo "然后运行： codex-use list"
+echo "然后运行： codex-switch list"
