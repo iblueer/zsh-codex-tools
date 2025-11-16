@@ -571,7 +571,6 @@ _cx_help() {
 用法：
   codex-switch list                 列出全部环境（含 chatgpt 模式）
   codex-switch use <name>           切换到 <name> 环境（无需 .env 后缀）
-  codex-switch <name>               切换到 <name> 环境（兼容旧用法）
   codex-switch chatgpt              切换到 ChatGPT 浏览器登录模式
   codex-switch new <name>           新建 <name>.env，并打开编辑器
   codex-switch edit <name>          编辑 <name>.env（不存在则创建模板）
@@ -605,7 +604,7 @@ codex-switch() {
     del)                 _cx_cmd_del "$@" ;;
     show)                _cx_cmd_show ;;
     open)                _cx_open_path "$CODEX_USE_ENV_DIR" ;;
-    *)                   _cx_validate_env_name "$cmd" && _cx_switch_env "$cmd" ;;
+    *)                   _cx_err "未知命令：$cmd"; _cx_info "请使用 'codex-switch use <name>' 切换环境，或运行 'codex-switch help' 查看帮助"; return 2 ;;
   esac
 }
 
