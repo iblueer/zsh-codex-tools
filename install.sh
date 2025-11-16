@@ -47,9 +47,12 @@ fetch() {
     exit 1
   fi
 }
-fetch "$BASE_URL/bin/codex-use.zsh"      "$BIN_DIR/codex-use.zsh"
-fetch "$BASE_URL/bin/codex-use.bash"     "$BIN_DIR/codex-use.bash"
-fetch "$BASE_URL/completions/_codex-use" "$COMP_DIR/_codex-use"
+fetch "$BASE_URL/bin/codex-switch.zsh"      "$BIN_DIR/codex-switch.zsh"
+fetch "$BASE_URL/bin/codex-switch.bash"     "$BIN_DIR/codex-switch.bash"
+fetch "$BASE_URL/bin/codex-use.zsh"         "$BIN_DIR/codex-use.zsh"
+fetch "$BASE_URL/bin/codex-use.bash"        "$BIN_DIR/codex-use.bash"
+fetch "$BASE_URL/completions/_codex-switch" "$COMP_DIR/_codex-switch"
+fetch "$BASE_URL/completions/_codex-use"    "$COMP_DIR/_codex-use"
 
 : "${CODEX_HOME:="$HOME/.codex"}"
 ENV_DIR="$CODEX_HOME/envs"
@@ -108,8 +111,8 @@ if [ "$SHELL_NAME" = "bash" ]; then
   cat >"$INIT_FILE" <<'EINIT'
 # zsh-codex-tools init for bash (auto-generated)
 : ${CODEX_HOME:="$HOME/.codex"}
-if [ -f "$HOME/.codex-tools/bin/codex-use.bash" ]; then
-  . "$HOME/.codex-tools/bin/codex-use.bash"
+if [ -f "$HOME/.codex-tools/bin/codex-switch.bash" ]; then
+  . "$HOME/.codex-tools/bin/codex-switch.bash"
 fi
 EINIT
 else
@@ -127,8 +130,8 @@ esac
 
 case "$-" in
   *i*)
-    if [ -f "$HOME/.codex-tools/bin/codex-use.zsh" ]; then
-      . "$HOME/.codex-tools/bin/codex-use.zsh"
+    if [ -f "$HOME/.codex-tools/bin/codex-switch.zsh" ]; then
+      . "$HOME/.codex-tools/bin/codex-switch.zsh"
     fi
     ;;
 esac
@@ -184,4 +187,4 @@ echo "配置文件：$CONFIG_FILE"
 echo "授权文件：$AUTH_FILE"
 echo
 echo "请执行： source \"$RC\""
-echo "然后运行： codex-use list"
+echo "然后运行： codex-switch list"
