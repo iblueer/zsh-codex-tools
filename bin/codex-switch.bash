@@ -96,7 +96,6 @@ _cx_open_path() {
   if [ -d "$path" ]; then
     if command -v code >/dev/null 2>&1; then code -w "$path" && return 0; fi
     if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$path" && return 0; fi
-    if command -v open >/dev/null 2>&1; then open -a "Visual Studio Code" "$path" && return 0; fi
     if command -v subl >/dev/null 2>&1; then subl -w "$path" && return 0; fi
     if command -v xdg-open >/dev/null 2>&1; then xdg-open "$path" && return 0; fi
     if [ -n "${VISUAL:-}" ]; then "$VISUAL" "$path" && return 0; fi
@@ -110,7 +109,6 @@ _cx_open_path() {
   if [ -n "${EDITOR:-}" ]; then "$EDITOR" "$path" && return 0; fi
   if command -v code >/dev/null 2>&1; then code -w "$path" && return 0; fi
   if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$path" && return 0; fi
-  if command -v open >/dev/null 2>&1; then open -a "Visual Studio Code" "$path" && return 0; fi
   if command -v gedit >/dev/null 2>&1; then gedit --wait "$path" && return 0; fi
   if command -v vim >/dev/null 2>&1; then vim "$path" && return 0; fi
   if command -v nvim >/dev/null 2>&1; then nvim "$path" && return 0; fi
