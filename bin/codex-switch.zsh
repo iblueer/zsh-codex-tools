@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 # bin/codex-switch.zsh
 # Codex CLI environment/profile management tool for Zsh
 # 配置项：
@@ -110,13 +111,13 @@ _cx_validate_env_name() {
 }
 
 _cx_open_path() {
-  local path="$1"
+  local file_path="$1"
   if _cx_is_windows; then
-    local winpath="$path"
+    local winpath="$file_path"
     if command -v cygpath >/dev/null 2>&1; then
-      winpath="$(cygpath -w "$path")"
+      winpath="$(cygpath -w "$file_path")"
     fi
-    if [[ -d "$path" ]]; then
+    if [[ -d "$file_path" ]]; then
       if command -v code >/dev/null 2>&1; then code -w "$winpath" && return 0; fi
       if command -v explorer.exe >/dev/null 2>&1; then explorer.exe "$winpath" && return 0; fi
     else
@@ -126,57 +127,56 @@ _cx_open_path() {
     if command -v cmd.exe >/dev/null 2>&1; then
       cmd.exe /c start "" "$winpath" >/dev/null 2>&1 && return 0
     fi
-    _cx_warn "请手动打开：$path"
+    _cx_warn "请手动打开：$file_path"
     return 0
   fi
   if [[ -n "${CODEX_USE_EDITOR_CMD:-}" ]]; then
-    if eval "$CODEX_USE_EDITOR_CMD ${(q)path}"; then
+    if eval "$CODEX_USE_EDITOR_CMD ${(q)file_path}"; then
       return 0
     else
       _cx_warn "自定义编辑器命令失败：$CODEX_USE_EDITOR_CMD"
     fi
   fi
-  if [[ -d "$path" ]]; then
-    if command -v code >/dev/null 2>&1; then code -w "$path" && return 0; fi
-    if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$path" && return 0; fi
-    if command -v subl >/dev/null 2>&1; then subl -w "$path" && return 0; fi
-    if command -v xdg-open >/dev/null 2>&1; then xdg-open "$path" && return 0; fi
+  if [[ -d "$file_path" ]]; then
+    if command -v code >/dev/null 2>&1; then code -w "$file_path" && return 0; fi
+    if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$file_path" && return 0; fi
+    if command -v subl >/dev/null 2>&1; then subl -w "$file_path" && return 0; fi
+    if command -v xdg-open >/dev/null 2>&1; then xdg-open "$file_path" && return 0; fi
     if [[ -n "${VISUAL:-}" ]]; then
       local -a _cx_cmd
       _cx_cmd=("${(z)VISUAL}")
-      "${_cx_cmd[@]}" "$path" && return 0
+      "${_cx_cmd[@]}" "$file_path" && return 0
     fi
     if [[ -n "${EDITOR:-}" ]]; then
       local -a _cx_cmd
       _cx_cmd=("${(z)EDITOR}")
-      "${_cx_cmd[@]}" "$path" && return 0
+      "${_cx_cmd[@]}" "$file_path" && return 0
     fi
-    if command -v vim >/dev/null 2>&1; then vim "$path" && return 0; fi
-    if command -v nvim >/dev/null 2>&1; then nvim "$path" && return 0; fi
-    _cx_warn "请手动打开：$path"
+    if command -v vim >/dev/null 2>&1; then vim "$file_path" && return 0; fi
+    if command -v nvim >/dev/null 2>&1; then nvim "$file_path" && return 0; fi
+    _cx_warn "请手动打开：$file_path"
     return 0
   fi
   if [[ -n "${VISUAL:-}" ]]; then
     local -a _cx_cmd
     _cx_cmd=("${(z)VISUAL}")
-    "${_cx_cmd[@]}" "$path" && return 0
+    "${_cx_cmd[@]}" "$file_path" && return 0
   fi
   if [[ -n "${EDITOR:-}" ]]; then
     local -a _cx_cmd
     _cx_cmd=("${(z)EDITOR}")
-    "${_cx_cmd[@]}" "$path" && return 0
+    "${_cx_cmd[@]}" "$file_path" && return 0
   fi
-  if command -v code >/dev/null 2>&1; then code -w "$path" && return 0; fi
-  if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$path" && return 0; fi
-  if command -v gedit >/dev/null 2>&1; then gedit --wait "$path" && return 0; fi
-  if command -v vim >/dev/null 2>&1; then vim "$path" && return 0; fi
-  if command -v nvim >/dev/null 2>&1; then nvim "$path" && return 0; fi
-  if command -v nano >/dev/null 2>&1; then nano "$path" && return 0; fi
-  if command -v subl >/dev/null 2>&1; then subl -w "$path" && return 0; fi
-  if command -v open >/dev/null 2>&1; then open "$path" && return 0; fi
-  if command -v xdg-open >/dev/null 2>&1; then xdg-open "$path" && return 0; fi
-  _cx_warn "请手动打开：$path"
-}
+  if command -v code >/dev/null 2>&1; then code -w "$file_path" && return 0; fi
+  if command -v code-insiders >/dev/null 2>&1; then code-insiders -w "$file_path" && return 0; fi
+  if command -v gedit >/dev/null 2>&1; then gedit --wait "$file_path" && return 0; fi
+  if command -v vim >/dev/null 2>&1; then vim "$file_path" && return 0; fi
+  if command -v nvim >/dev/null 2>&1; then nvim "$file_path" && return 0; fi
+  if command -v nano >/dev/null 2>&1; then nano "$file_path" && return 0; fi
+  if command -v subl >/dev/null 2>&1; then subl -w "$file_path" && return 0; fi
+  if command -v open >/dev/null 2>&1; then open "$file_path" && return 0; fi
+  if command -v xdg-open >/dev/null 2>&1; then xdg-open "$file_path" && return 0; fi
+  _cx_warn "请手动打开：$file_path"
 
 _cx_purge_api_env_except_claude() {
   # 只清理 Codex 相关的变量，保留 ANTHROPIC_* 变量不动

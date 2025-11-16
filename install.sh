@@ -130,7 +130,7 @@ esac
 
 case "$-" in
   *i*)
-    if [ -f "$HOME/.codex-tools/bin/codex-switch.zsh" ]; then
+    if [ -f "$HOME/.codex-tools/bin/codex-switch.zsh" ] && command -v zsh >/dev/null 2>&1; then
       . "$HOME/.codex-tools/bin/codex-switch.zsh"
     fi
     ;;
